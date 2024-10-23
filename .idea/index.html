@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management with Firebase</title>
+  <!-- Include Firebase App and Database modules -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js';
+    import { getDatabase, ref, set, onValue, push } from 'https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js';
+
+    // Your Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyAh_BA71MQZlnOlvqJl7-bONCoUa3QeS68",
+        authDomain: "trucker-app-e164a.firebaseapp.com",
+        databaseURL: "https://trucker-app-e164a-default-rtdb.firebaseio.com",
+        projectId: "trucker-app-e164a",
+        storageBucket: "trucker-app-e164a.appspot.com",
+        messagingSenderId: "986110599089",
+        appId: "1:986110599089:web:9a8db5e87dd2d9ecc3a790",
+        measurementId: "G-CXKGVHVRY0"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbRef = ref(db, 'WebUsers/');
+
+    // Function to create a user
+    window.createUser = function() {
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+
+        // Use push() from the imported functions to generate a unique key
+        const newUserRef = push(dbRef); // Generate a unique key
+        const userData = {
+            username: username,
+            email: email
+        };
+
+        set(newUserRef, userData) // Use the new reference to set user data
+            .then(() => {
+                console.log('User created successfully');
+                document.getElementById('username').value = '';
+                document.getElementById('email').value = '';
+                readUsers(); // Refresh the user list
+            })
+            .catch((error) => {
+                console.error('Error creating user:', error);
+            });
+    };
+
+    // Function to read users
+    window.readUsers = function() {
+        onValue(dbRef, (snapshot) => {
+            const users = snapshot.val();
+            const userList = document.getElementById('userList');
+            userList.innerHTML = ''; // Clear the list
+
+            for (const userId in users) {
+                const userData = users[userId];
+                const listItem = document.createElement('li');
+                listItem.textContent = `User ID: ${userId}, Username: ${userData.username}, Email: ${userData.email}`;
+                userList.appendChild(listItem);
+            }
+        });
+    };
+
+    // Initial fetch of users
+    readUsers();
+  </script>
+</head>
+<body>
+
+<h1>User Management</h1>
+
+<input type="text" id="username" placeholder="Enter username" />
+<input type="text" id="email" placeholder="Enter email" />
+<button onclick="createUser()">Create User</button>
+
+<h2>Users</h2>
+<ul id="userList"></ul>
+
+</body>
+</html>
